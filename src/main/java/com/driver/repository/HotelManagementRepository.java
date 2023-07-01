@@ -72,19 +72,15 @@ public class HotelManagementRepository {
 
         booking.setBookingId(bookingId);
         int totalAmount = reqRooms * hotel.getPricePerNight();
-        booking.setAmountToBePaid(reqRooms * hotel.getPricePerNight());
+        booking.setAmountToBePaid(totalAmount);
         bookingMap.put(bookingId, booking);
 
         hotel.setAvailableRooms(hotel.getAvailableRooms()-reqRooms);
         hotelMap.put(hotel.getHotelName(), hotel);
 
         int userId = booking.getBookingAadharCard();
-        if(userBookingCount.containsKey(userId)){
-            userBookingCount.put(userId, 1);
-        }
-        else {
-            userBookingCount.put(userId, userBookingCount.get(userId)+1);
-        }
+        int currentBooking = userBookingCount.get(userId);
+        userBookingCount.put(userId, Objects.nonNull(currentBooking)?1+currentBooking: 1);
 
         return totalAmount;
     }
