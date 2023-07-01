@@ -13,7 +13,7 @@ public class HotelManagementRepository {
     private Map<String, Hotel> hotelMap = new HashMap<>();
     private Map<Integer, User> userMap = new HashMap<>();
     private Map<String, Booking> bookingMap = new HashMap<>();
-    private Map<Integer, Integer> userBookingCount = new HashMap<>();
+    private Map<Integer, Integer> countOfBookings = new HashMap<>();
 
     public String add(Hotel hotel) {
         if(hotel==null || hotel.getHotelName()==null){
@@ -49,32 +49,38 @@ public class HotelManagementRepository {
     }
 
     public int bookARoom(Booking booking) {
-        String bookingId = UUID.randomUUID().toString();
-        booking.setBookingId(bookingId);
+        String key = UUID.randomUUID().toString();
 
-        int reqRooms = booking.getNoOfRooms();
+        booking.setBookingId(key);
 
-        Hotel hotel = hotelMap.get(booking.getHotelName());
-        if(hotel.getAvailableRooms() < reqRooms)
+        String hotelName = booking.getHotelName();
+
+        Hotel hotel = hotelMap.get(hotelName);
+
+        int availableRooms = hotel.getAvailableRooms();
+
+        if(availableRooms<booking.getNoOfRooms()){
             return -1;
+        }
 
-        int totalAmount = reqRooms * hotel.getPricePerNight();
+        int amountToBePaid = hotel.getPricePerNight()*booking.getNoOfRooms();
+        booking.setAmountToBePaid(amountToBePaid);
 
-        booking.setAmountToBePaid(totalAmount);
-        bookingMap.put(bookingId, booking);
+        //Make sure we check this part of code as well
+        hotel.setAvailableRooms(hotel.getAvailableRooms()-booking.getNoOfRooms());
 
-        hotel.setAvailableRooms(hotel.getAvailableRooms()-reqRooms);
-        hotelMap.put(hotel.getHotelName(), hotel);
+        bookingMap.put(key,booking);
 
-        int userId = booking.getBookingAadharCard();
-        int currentBooking = userBookingCount.get(userId);
-        userBookingCount.put(userId, Objects.nonNull(currentBooking)?1+currentBooking: 1);
+        hotelMap.put(hotelName,hotel);
 
-        return totalAmount;
+        int aadharCard = booking.getBookingAadharCard();
+        Integer currentBookings = countOfBookings.get(aadharCard);
+        countOfBookings.put(aadharCard, Objects.nonNull(currentBookings)?1+currentBookings:1);
+        return amountToBePaid;
     }
 
     public int getBookingCount(Integer aadharCard) {
-        return userBookingCount.get(aadharCard);
+        return countOfBookings.get(aadharCard);
     }
 
     public Hotel updateFacility(List<Facility> newFacilities, String hotelName) {
