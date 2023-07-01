@@ -16,8 +16,13 @@ public class HotelManagementRepository {
     private Map<Integer, Integer> userBookingCount = new HashMap<>();
 
     public String add(Hotel hotel) {
+        if(hotel==null || hotel.getHotelName()==null){
+            return "FAILURE";
+        }
+
         if(hotelMap.containsKey(hotel.getHotelName()))
             return "FAILURE";
+
         hotelMap.put(hotel.getHotelName(), hotel);
         return "SUCCESS";
     }
@@ -25,26 +30,6 @@ public class HotelManagementRepository {
     public Integer add(User user) {
         userMap.put(user.getaadharCardNo(), user);
         return user.getaadharCardNo();
-    }
-
-    public int findMaxFacility() {
-        int max =0;
-        for (String hotel: hotelMap.keySet()){
-            Hotel hotel1 = hotelMap.get(hotel);
-            max = Math.max(max, hotel1.getFacilities().size());
-        }
-        return max;
-    }
-
-    public List<String> getHotelWithSameFacility(int maxFacilityByAnHotel) {
-        List<String> hotelList = new ArrayList<>();
-        for (String hotel: hotelMap.keySet()){
-            Hotel hotel1 = hotelMap.get(hotel);
-            if (maxFacilityByAnHotel == hotel1.getFacilities().size()){
-                hotelList.add(hotel1.getHotelName());
-            }
-        }
-        return hotelList;
     }
 
     public String mostFacility() {
@@ -65,13 +50,16 @@ public class HotelManagementRepository {
 
     public int bookARoom(Booking booking) {
         String bookingId = UUID.randomUUID().toString();
+        booking.setBookingId(bookingId);
+
         int reqRooms = booking.getNoOfRooms();
+
         Hotel hotel = hotelMap.get(booking.getHotelName());
         if(hotel.getAvailableRooms() < reqRooms)
             return -1;
 
-        booking.setBookingId(bookingId);
         int totalAmount = reqRooms * hotel.getPricePerNight();
+
         booking.setAmountToBePaid(totalAmount);
         bookingMap.put(bookingId, booking);
 
@@ -97,6 +85,7 @@ public class HotelManagementRepository {
                 oldFacilities.add(facility);
             }
         }
+        hotelMap.put(hotelName, hotel);
         return hotel;
     }
 }
